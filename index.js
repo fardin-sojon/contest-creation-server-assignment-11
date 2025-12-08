@@ -11,7 +11,6 @@ const port = process.env.PORT || 5000;
 // CONFIGURATION
 const corsOptions = {
     origin: '*',
-    credentials: true,
     optionSuccessStatus: 200,
 };
 
