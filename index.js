@@ -194,7 +194,7 @@ app.get('/contests', async (req, res) => {
     if (type) query.type = type;
 
     const count = await Contest.countDocuments(query);
-    const result = await Contest.find(query)
+    const result = await Contest.find(query, 'name image description participationCount type status')
         .skip((page - 1) * limit)
         .limit(parseInt(limit));
     res.send({ result, count });
