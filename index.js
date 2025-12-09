@@ -358,6 +358,17 @@ app.post('/submissions', verifyToken, async (req, res) => {
     }
 });
 
+app.get('/submissions/contest/:contestId', verifyToken, verifyCreator, async (req, res) => {
+    const contestId = req.params.contestId;
+    const result = await Submission.find({ contestId });
+    res.send(result);
+});
+
+app.get('/submissions/my-submissions/:email', verifyToken, async (req, res) => {
+    const email = req.params.email;
+    const result = await Submission.find({ participantEmail: email });
+    res.send(result);
+});
 
 app.get('/', (req, res) => {
     res.send('ContestHub Server is running');
