@@ -33,7 +33,7 @@ A modern, full-stack Contest Creation Platform where functionalities meet creati
 
 ## 🚀 Getting Started
 ### 
-🔗 [Client Repository.](https://github.com/fardin-sojon/contest-creation-client-assignment-11.git)
+🔗 [Client Repository.](https://github.com/fardin-sojon/contest-creation-client-assignment-11-.git)
 
 1.  Clone the repository.
 2.  Install dependencies: `npm install` in both `client` and `server` folders.
