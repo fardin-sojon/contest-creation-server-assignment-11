@@ -205,6 +205,24 @@ app.get('/contests', async (req, res) => {
 });
 
 
+app.get('/contests/popular', async (req, res) => {
+    const result = await Contest.find({ status: 'approved' })
+        .sort({ participationCount: -1 })
+        .limit(6);
+    res.send(result);
+});
+
+app.get('/contests/:id', verifyToken, async (req, res) => {
+    try {
+        const id = req.params.id;
+        const result = await Contest.findById(id).populate('winner', 'name image');
+        if (!result) return res.status(404).send({ message: "Contest not found" });
+        res.send(result);
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+});
+
 
 
 app.get('/', (req, res) => {
