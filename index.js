@@ -109,6 +109,17 @@ const verifyAdmin = async (req, res, next) => {
     next();
 };
 
+const verifyCreator = async (req, res, next) => {
+    const email = req.decoded.email;
+    const query = { email: email };
+    const user = await User.findOne(query);
+    const isCreator = user?.role === 'creator';
+    if (!isCreator) {
+        return res.status(403).send({ message: 'forbidden access' });
+    }
+    next();
+};
+
 // --- AUTH ---
 app.post('/jwt', async (req, res) => {
     const user = req.body;
@@ -138,17 +149,47 @@ app.post('/users', async (req, res) => {
 });
 
 
+// --- USERS ---
+app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
+    const result = await User.find();
+    res.send(result);
+});
 
-const verifyCreator = async (req, res, next) => {
-    const email = req.decoded.email;
-    const query = { email: email };
-    const user = await User.findOne(query);
-    const isCreator = user?.role === 'creator';
-    if (!isCreator) {
-        return res.status(403).send({ message: 'forbidden access' });
-    }
-    next();
-};
+app.get('/users/:email', verifyToken, async (req, res) => {
+    const email = req.params.email;
+    const result = await User.findOne({ email });
+    res.send(result);
+});
+
+
+
+app.patch('/users/role/:id', verifyToken, verifyAdmin, async (req, res) => {
+    const id = req.params.id;
+    const { role } = req.body;
+    const result = await User.findByIdAndUpdate(id, { $set: { role: role } }, { new: true });
+    res.send(result);
+});
+
+app.put('/users/:email', verifyToken, async (req, res) => {
+    const email = req.params.email;
+    const body = req.body;
+    const result = await User.updateOne({ email: email }, { $set: { ...body } });
+    res.send(result);
+});
+
+
+app.get('/leaderboard', async (req, res) => {
+    const result = await Contest.aggregate([
+        { $match: { winner: { $ne: null } } },
+        { $group: { _id: "$winner", winCount: { $sum: 1 } } },
+        { $lookup: { from: "users", localField: "_id", foreignField: "_id", as: "user" } },
+        { $unwind: "$user" },
+        { $project: { _id: 1, winCount: 1, name: "$user.name", image: "$user.image" } },
+        { $sort: { winCount: -1 } }
+    ]);
+    res.send(result);
+});
+
 
 
 
