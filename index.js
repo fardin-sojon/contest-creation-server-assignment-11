@@ -258,6 +258,32 @@ app.patch('/contests/winner/:id', verifyToken, verifyCreator, async (req, res) =
 });
 
 
+// Admin Contest Routes
+app.get('/admin/contests', verifyToken, verifyAdmin, async (req, res) => {
+    const result = await Contest.find();
+    res.send(result);
+});
+
+app.patch('/admin/contests/:id', verifyToken, verifyAdmin, async (req, res) => {
+    const id = req.params.id;
+    const result = await Contest.findByIdAndUpdate(id, { status: 'approved' }, { new: true });
+    res.send(result);
+});
+
+app.delete('/admin/contests/:id', verifyToken, verifyAdmin, async (req, res) => {
+    const id = req.params.id;
+    const result = await Contest.findByIdAndDelete(id);
+    res.send(result);
+});
+
+app.get('/contests/won/:email', verifyToken, async (req, res) => {
+    const email = req.params.email;
+    const user = await User.findOne({ email });
+    if (!user) return res.send([]);
+    const result = await Contest.find({ winner: user._id });
+    res.send(result);
+});
+
 
 app.get('/', (req, res) => {
     res.send('ContestHub Server is running');
