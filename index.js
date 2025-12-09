@@ -341,6 +341,23 @@ app.post('/confirm-payment', verifyToken, async (req, res) => {
     }
 });
 
+app.get('/payments/:email', verifyToken, async (req, res) => {
+    const email = req.params.email;
+    const result = await Payment.find({ email }).sort({ date: -1 }).populate('contestId');
+    res.send(result);
+});
+
+//  SUBMISSIONS 
+app.post('/submissions', verifyToken, async (req, res) => {
+    try {
+        const submission = req.body;
+        const result = await Submission.create(submission);
+        res.send(result);
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+});
+
 
 app.get('/', (req, res) => {
     res.send('ContestHub Server is running');
