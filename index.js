@@ -109,13 +109,35 @@ const verifyAdmin = async (req, res, next) => {
     next();
 };
 
-
 // --- AUTH ---
 app.post('/jwt', async (req, res) => {
     const user = req.body;
     const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET || 'secret', { expiresIn: '1h' });
     res.send({ token });
 });
+
+app.post('/users', async (req, res) => {
+    try {
+        const user = req.body;
+        if (!user.email) return res.status(400).send({ message: 'Email is required' });
+        const isExist = await User.findOne({ email: user.email });
+        if (isExist) {
+           
+            await User.updateOne(
+                { email: user.email },
+                { $set: { name: user.name, image: user.image } }
+            );
+            return res.send({ message: 'User already exists', insertedId: null });
+        }
+        const newUser = new User(user);
+        const result = await newUser.save();
+        res.send(result);
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+});
+
+
 
 const verifyCreator = async (req, res, next) => {
     const email = req.decoded.email;
