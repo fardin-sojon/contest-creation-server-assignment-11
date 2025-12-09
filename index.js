@@ -238,6 +238,27 @@ app.put('/contests/:id', verifyToken, verifyCreator, async (req, res) => {
 });
 
 
+app.get('/contests/creator/:email', verifyToken, verifyCreator, async (req, res) => {
+    const email = req.params.email;
+    const result = await Contest.find({ 'creator.email': email });
+    res.send(result);
+});
+
+app.delete('/contests/:id', verifyToken, verifyCreator, async (req, res) => {
+    const id = req.params.id;
+    const result = await Contest.findByIdAndDelete(id);
+    res.send(result);
+});
+
+app.patch('/contests/winner/:id', verifyToken, verifyCreator, async (req, res) => {
+    const id = req.params.id;
+    const { winnerId } = req.body;
+    const result = await Contest.updateOne({ _id: id }, { winner: winnerId });
+    res.send(result);
+});
+
+
+
 app.get('/', (req, res) => {
     res.send('ContestHub Server is running');
 });
