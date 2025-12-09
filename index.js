@@ -223,6 +223,19 @@ app.get('/contests/:id', verifyToken, async (req, res) => {
     }
 });
 
+app.post('/contests', verifyToken, verifyCreator, async (req, res) => {
+    const contest = req.body;
+    const newContest = new Contest(contest);
+    const result = await newContest.save();
+    res.send(result);
+});
+
+app.put('/contests/:id', verifyToken, verifyCreator, async (req, res) => {
+    const id = req.params.id;
+    const updatedData = req.body;
+    const result = await Contest.findByIdAndUpdate(id, updatedData, { new: true });
+    res.send(result);
+});
 
 
 app.get('/', (req, res) => {
