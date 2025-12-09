@@ -110,6 +110,12 @@ const verifyAdmin = async (req, res, next) => {
 };
 
 
+// --- AUTH ---
+app.post('/jwt', async (req, res) => {
+    const user = req.body;
+    const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET || 'secret', { expiresIn: '1h' });
+    res.send({ token });
+});
 
 const verifyCreator = async (req, res, next) => {
     const email = req.decoded.email;
