@@ -190,6 +190,20 @@ app.get('/leaderboard', async (req, res) => {
     res.send(result);
 });
 
+// --- CONTESTS ---
+app.get('/contests', async (req, res) => {
+    const { search, type, page = 1, limit = 10 } = req.query;
+    let query = { status: 'approved' };
+    if (search) query.type = { $regex: search, $options: 'i' };
+    if (type) query.type = type;
+
+    const count = await Contest.countDocuments(query);
+    const result = await Contest.find(query, 'name image description participationCount type status')
+        .skip((page - 1) * limit)
+        .limit(parseInt(limit));
+    res.send({ result, count });
+});
+
 
 
 
