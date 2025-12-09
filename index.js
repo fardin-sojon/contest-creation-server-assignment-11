@@ -313,6 +313,34 @@ app.post('/create-checkout-session', verifyToken, async (req, res) => {
     }
 });
 
+app.post('/confirm-payment', verifyToken, async (req, res) => {
+    const { session_id } = req.body;
+    try {
+        const session = await stripe.checkout.sessions.retrieve(session_id);
+        if (session.payment_status === 'paid') {
+            const { contestId, userEmail, contestName } = session.metadata;
+            const existingPayment = await Payment.findOne({ transactionId: session.payment_intent });
+            if (existingPayment) return res.send({ success: true, message: 'Already Processed' });
+
+            const payment = await Payment.create({
+                email: userEmail,
+                price: session.amount_total / 100,
+                transactionId: session.payment_intent,
+                contestId,
+                contestName,
+                status: 'succeeded'
+            });
+
+            await Contest.updateOne({ _id: contestId }, { $inc: { participationCount: 1 } });
+            res.send({ success: true, paymentResult: payment });
+        } else {
+            res.send({ success: false, message: 'Payment not paid' });
+        }
+    } catch (error) {
+        res.status(500).send({ success: false, error: error.message });
+    }
+});
+
 
 app.get('/', (req, res) => {
     res.send('ContestHub Server is running');
