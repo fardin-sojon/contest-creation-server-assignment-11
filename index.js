@@ -284,6 +284,35 @@ app.get('/contests/won/:email', verifyToken, async (req, res) => {
     res.send(result);
 });
 
+// PAYMENTS 
+app.post('/create-checkout-session', verifyToken, async (req, res) => {
+    const { contestId, contestName, amount, userEmail } = req.body;
+    if (!contestId || !amount) return res.status(400).send({ error: "Missing required fields" });
+    const priceInCents = parseInt(parseFloat(amount) * 100);
+
+    try {
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [{
+                price_data: {
+                    currency: 'usd',
+                    product_data: { name: contestName },
+                    unit_amount: priceInCents,
+                },
+                quantity: 1,
+            }],
+            mode: 'payment',
+            customer_email: userEmail,
+            metadata: { contestId, userEmail, contestName },
+            success_url: `http://localhost:5173/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `http://localhost:5173/payment-fail`,
+        });
+        res.send({ url: session.url });
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
+});
+
 
 app.get('/', (req, res) => {
     res.send('ContestHub Server is running');
