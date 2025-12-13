@@ -250,6 +250,11 @@ app.put('/contests/:id', verifyToken, verifyCreator, async (req, res) => {
     const id = req.params.id;
     const updatedData = req.body;
     const contest = await Contest.findById(id);
+    if (!contest) return res.status(404).send({ message: "Contest not found" });
+
+    if (contest.creator.email !== req.decoded.email) {
+        return res.status(403).send({ message: "You can only edit your own contests" });
+    }
     if (contest.status !== 'pending') {
         return res.status(403).send({ message: "Cannot edit approved contests" });
     }
@@ -266,6 +271,11 @@ app.get('/contests/creator/:email', verifyToken, verifyCreator, async (req, res)
 app.delete('/contests/:id', verifyToken, verifyCreator, async (req, res) => {
     const id = req.params.id;
     const contest = await Contest.findById(id);
+    if (!contest) return res.status(404).send({ message: "Contest not found" });
+
+    if (contest.creator.email !== req.decoded.email) {
+        return res.status(403).send({ message: "You can only delete your own contests" });
+    }
     if (contest.status !== 'pending') {
         return res.status(403).send({ message: "Cannot delete approved contests" });
     }
@@ -277,6 +287,11 @@ app.patch('/contests/winner/:id', verifyToken, verifyCreator, async (req, res) =
     const id = req.params.id;
     const { winnerId } = req.body;
     const contest = await Contest.findById(id);
+    if (!contest) return res.status(404).send({ message: "Contest not found" });
+
+    if (contest.creator.email !== req.decoded.email) {
+        return res.status(403).send({ message: "You can only declare winners for your own contests" });
+    }
     if (new Date(contest.deadline) > new Date()) {
         return res.status(403).send({ message: "Cannot declare winner before deadline" });
     }
