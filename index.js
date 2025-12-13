@@ -104,7 +104,8 @@ const verifyAdmin = async (req, res, next) => {
     const user = await User.findOne(query);
     const isAdmin = user?.role === 'admin';
     if (!isAdmin) {
-        return res.status(403).send({ message: 'forbidden access' });
+        console.log(`VerifyAdmin Failed: User ${email} has role ${user?.role}`);
+        return res.status(403).send({ message: `forbidden access: user is ${user?.role}, expected admin` });
     }
     next();
 };
@@ -133,7 +134,6 @@ app.post('/users', async (req, res) => {
         if (!user.email) return res.status(400).send({ message: 'Email is required' });
         const isExist = await User.findOne({ email: user.email });
         if (isExist) {
-           
             await User.updateOne(
                 { email: user.email },
                 { $set: { name: user.name, image: user.image } }
@@ -148,7 +148,6 @@ app.post('/users', async (req, res) => {
     }
 });
 
-
 // --- USERS ---
 app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
     const result = await User.find();
@@ -161,41 +160,59 @@ app.get('/users/:email', verifyToken, async (req, res) => {
     res.send(result);
 });
 
-
-
 app.patch('/users/role/:id', verifyToken, verifyAdmin, async (req, res) => {
-    const id = req.params.id;
-    const { role } = req.body;
-    const result = await User.findByIdAndUpdate(id, { $set: { role: role } }, { new: true });
-    res.send(result);
+    try {
+        const id = req.params.id;
+        const { role } = req.body;
+        const result = await User.findByIdAndUpdate(id, { $set: { role: role } }, { new: true });
+        res.send(result);
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
 });
 
 app.put('/users/:email', verifyToken, async (req, res) => {
     const email = req.params.email;
-    const body = req.body;
-    const result = await User.updateOne({ email: email }, { $set: { ...body } });
+    const user = req.body;
+    const filter = { email: email };
+    const options = { upsert: true };
+    const updateDoc = {
+        $set: {
+            name: user.name,
+            image: user.photo,
+            address: user.address, // Added address
+        }
+    };
+    const result = await User.updateOne(filter, updateDoc, options);
     res.send(result);
 });
 
-
 app.get('/leaderboard', async (req, res) => {
-    const result = await Contest.aggregate([
-        { $match: { winner: { $ne: null } } },
-        { $group: { _id: "$winner", winCount: { $sum: 1 } } },
-        { $lookup: { from: "users", localField: "_id", foreignField: "_id", as: "user" } },
-        { $unwind: "$user" },
-        { $project: { _id: 1, winCount: 1, name: "$user.name", image: "$user.image" } },
-        { $sort: { winCount: -1 } }
-    ]);
-    res.send(result);
+    try {
+        const result = await Contest.aggregate([
+            { $match: { winner: { $ne: null } } },
+            { $group: { _id: "$winner", winCount: { $sum: 1 } } },
+            { $lookup: { from: "users", localField: "_id", foreignField: "_id", as: "user" } },
+            { $unwind: "$user" },
+            { $project: { _id: 1, winCount: 1, name: "$user.name", image: "$user.image" } },
+            { $sort: { winCount: -1 } }
+        ]);
+        res.send(result);
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
 });
 
 // --- CONTESTS ---
 app.get('/contests', async (req, res) => {
     const { search, type, page = 1, limit = 10 } = req.query;
     let query = { status: 'approved' };
-    if (search) query.type = { $regex: search, $options: 'i' };
-    if (type) query.type = type;
+    if (search) {
+        query.name = { $regex: search, $options: 'i' };
+    }
+    if (type) {
+        query.type = { $regex: type, $options: 'i' };
+    }
 
     const count = await Contest.countDocuments(query);
     const result = await Contest.find(query, 'name image description participationCount type status')
@@ -203,7 +220,6 @@ app.get('/contests', async (req, res) => {
         .limit(parseInt(limit));
     res.send({ result, count });
 });
-
 
 app.get('/contests/popular', async (req, res) => {
     const result = await Contest.find({ status: 'approved' })
@@ -233,10 +249,13 @@ app.post('/contests', verifyToken, verifyCreator, async (req, res) => {
 app.put('/contests/:id', verifyToken, verifyCreator, async (req, res) => {
     const id = req.params.id;
     const updatedData = req.body;
+    const contest = await Contest.findById(id);
+    if (contest.status !== 'pending') {
+        return res.status(403).send({ message: "Cannot edit approved contests" });
+    }
     const result = await Contest.findByIdAndUpdate(id, updatedData, { new: true });
     res.send(result);
 });
-
 
 app.get('/contests/creator/:email', verifyToken, verifyCreator, async (req, res) => {
     const email = req.params.email;
@@ -246,6 +265,10 @@ app.get('/contests/creator/:email', verifyToken, verifyCreator, async (req, res)
 
 app.delete('/contests/:id', verifyToken, verifyCreator, async (req, res) => {
     const id = req.params.id;
+    const contest = await Contest.findById(id);
+    if (contest.status !== 'pending') {
+        return res.status(403).send({ message: "Cannot delete approved contests" });
+    }
     const result = await Contest.findByIdAndDelete(id);
     res.send(result);
 });
@@ -253,10 +276,13 @@ app.delete('/contests/:id', verifyToken, verifyCreator, async (req, res) => {
 app.patch('/contests/winner/:id', verifyToken, verifyCreator, async (req, res) => {
     const id = req.params.id;
     const { winnerId } = req.body;
-    const result = await Contest.updateOne({ _id: id }, { winner: winnerId });
+    const contest = await Contest.findById(id);
+    if (new Date(contest.deadline) > new Date()) {
+        return res.status(403).send({ message: "Cannot declare winner before deadline" });
+    }
+    const result = await Contest.updateOne({ _id: id }, { winner: winnerId, status: 'completed' }); // Update status to completed
     res.send(result);
 });
-
 
 // Admin Contest Routes
 app.get('/admin/contests', verifyToken, verifyAdmin, async (req, res) => {
