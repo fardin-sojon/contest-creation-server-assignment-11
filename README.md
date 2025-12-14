@@ -1,45 +1,77 @@
-# ContestHub 🏆
-
-A modern, full-stack Contest Creation Platform where functionalities meet creativity. ContestHub allows users to create, participate in, and manage various types of contests (Design, Writing, Gaming, etc.) with a seamless and secure experience.
+# ContestHub - Creative Contest Management Platform
 
 ### 
 🔗 [🌐 Live Link](https://contest-creation-assignment-11.netlify.app)
 
-## ✨ Key Features
+## 🚀 Overview
+**ContestHub** is a production-ready, full-stack web application that revolutionizes how creative contests are managed. It serves as a bridge between **Contest Creators**, who want to host design, writing, or gaming challenges, and **Participants**, who compete to win prizes.
 
-1.  **Role-Based Access Control (RBAC)**: Distinct dashboards and capabilities for **Admins**, **Contest Creators**, and **Users**.
-2.  **Secure Authentication**: Robust login system using **JWT** (JSON Web Tokens) and **Google Social Login** for easy access.
-3.  **Payment Integration**: Fully functional payment gateway using **Stripe** for secure contest entry fees.
-4.  **Dynamic Leaderboard**: Real-time leaderboard showcasing top winners based on their victory counts.
-5.  **Contest Management**: Creators can add, update, and delete contests; Admins can approve or reject them.
-6.  **Search & Filter**: Advanced search functionality to find contests by tags (e.g., Business, Design) and tabs for category filtering.
-7.  **Interactive Dashboards**: 
-    - **User**: View participation history, winning stats, and profile analysis with charts.
-    - **Creator**: Manage submissions and declare winners.
-    - **Admin**: Manage all users and contests.
-8.  **Responsive Design**: Fully optimized UI for Mobile, Tablet, and Desktop devices using Tailwind CSS and DaisyUI.
-9.  **Task Submission System**: Intuitive modal-based submission system for participants to submit their work.
-10. **Visual Analytics**: Win percentage charts and statistical visualizations for users in their profile.
-11. **Dark/Light Theme**: Built-in theme toggle for better user experience.
-12. **Toast Notifications**: Interactive feedback using SweetAlert2 and Toasts for all major actions (CRUD, Login, Payment).
+With a secure and user-friendly interface, ContestHub handles everything from authentication and payments to submission management and winner declaration.
 
-## 🛠️ Technologies Used
+## ✨ Key Features (10+ Points)
+1.  **🔐 Secure Authentication**: robust system using **Firebase Auth** supporting both Email/Password and **Google Sign-in**.
+2.  **👑 Role-Based Access Control (RBAC)**: Distinct dashboards and permissions for **Admins**, **Contest Creators**, and **Users**.
+3.  **💳 Stripe Payment Integration**: Seamless and secure payment gateway for participants to pay entry fees and join contests.
+4.  **🖌️ Comprehensive Contest Creation**: Creators can post contests with detailed descriptions, price, prize money, tags, and deadlines using **React Datepicker**.
+5.  **🏆 Dynamic Leaderboard**: Real-time ranking of top winners, motivating users to participate more.
+6.  **🔍 Advanced Search & Sorting**: Users can search contests by tags and filter them by specific categories (e.g., Image Design, Article Writing).
+7.  **📱 Fully Responsive Design**: A "Mobile-First" approach ensuring a flawless experience across Phones, Tablets, and Desktops using **Tailwind CSS** & **DaisyUI**.
+8.  **⚡ Optimized Performance**: Utilizes **TanStack Query** for efficient data fetching, caching, and synchronization.
+9.  **📝 Submission & Winner System**: Participants submit task links, and Creators can view submissions and declare a winner with a single click.
+10. **✨ Engaging UI/UX**: Enhanced with **Framer Motion** for smooth entrances, hover effects, and page transitions.
+11. **📊 Smart Dashboards**:
+    *   **Admin**: Manage users & approve/reject contests.
+    *   **Creator**: Track submission status and manage created contests.
+    *   **User**: View winning history and participation progress.
+12. **🔔 Interactive Feedback**: Uses **SweetAlert2** for beautiful success/error popups and toast notifications.
 
--   **Frontend**: React.js, Tailwind CSS, DaisyUI, Framer Motion, Recharts
--   **Backend**: Node.js, Express.js
--   **Database**: MongoDB (Mongoose)
--   **Authentication**: Firebase, JWT
--   **Payment**: Stripe
+## 🛠️ Technology Stack
+### Client
+*   **React.js** (Vite)
+*   **React Router DOM**
+*   **Tailwind CSS** + **DaisyUI**
+*   **Framer Motion**
+*   **TanStack Query** (React Query)
+*   **React Hook Form**
+*   **Axios** (with Interceptors)
+*   **Firebase Authentication**
+
+### Server
+*   **Node.js**
+*   **Express.js**
+*   **MongoDB** (Mongoose)
+*   **JWT** (JSON Web Token)
+*   **Stripe SDK**
 
 ## 🚀 Getting Started
-### 
-🔗 [Client Repository.](https://github.com/fardin-sojon/contest-creation-client-assignment-11-.git)
+🔗 [Server Repository.](https://github.com/fardin-sojon/contest-creation-server-assignment-11.git)
 
-1.  Clone the repository.
-2.  Install dependencies: `npm install` in both `client` and `server` folders.
-3.  Setup `.env` files with your MongoDB URI, Stripe Key, and Firebase config.
-4.  Run `npm run dev` in client and `nodemon index.js` in server.
-
+## ⚙️ Local Installation
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/fardin-sojon/contest-creation-client-assignment-11-.git
+    
+    cd contest-creation-client-assignment-11
+    ```
+2.  **Install Dependencies**:
+    ```bash
+    npm install
+    ```
+3.  **Environment Setup**:
+    Create a `.env.local` file and add your keys:
+    ```env
+    VITE_apiKey=YOUR_FIREBASE_API_KEY
+    VITE_authDomain=YOUR_FIREBASE_AUTH_DOMAIN
+    VITE_projectId=YOUR_FIREBASE_PROJECT_ID
+    # ... other firebase config
+    VITE_API_URL=http://localhost:5000
+    VITE_PAYMENT_GATEWAY_PK=YOUR_STRIPE_PK
+    ```
+4.  **Run Locally**:
+    ```bash
+    npm run dev
+    nodemon index.js
+    ```
 
 ---
-*Developed by Fardin Rahman Sojon*
+*© 2025 ContestHub. Developed by Fardin Rahman Sojon.*
