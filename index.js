@@ -205,7 +205,7 @@ app.get('/leaderboard', async (req, res) => {
 
 // --- CONTESTS ---
 app.get('/contests', async (req, res) => {
-    const { search, type, page = 1, limit = 10 } = req.query;
+    const { search, type, sort, page = 1, limit = 10 } = req.query;
     let query = { status: 'approved' };
     if (search) {
         query.name = { $regex: search, $options: 'i' };
@@ -214,8 +214,18 @@ app.get('/contests', async (req, res) => {
         query.type = { $regex: type, $options: 'i' };
     }
 
+    let sortOptions = {};
+    if (sort) {
+        if (sort === 'newest') sortOptions = { deadline: -1 }; // Assuming deadline or createdAt
+        else if (sort === 'oldest') sortOptions = { deadline: 1 };
+        else if (sort === 'priceHigh') sortOptions = { price: -1 };
+        else if (sort === 'priceLow') sortOptions = { price: 1 };
+        else if (sort === 'popular') sortOptions = { participationCount: -1 };
+    }
+
     const count = await Contest.countDocuments(query);
-    const result = await Contest.find(query, 'name image description participationCount type status')
+    const result = await Contest.find(query, 'name image description participationCount type status price deadline')
+        .sort(sortOptions)
         .skip((page - 1) * limit)
         .limit(parseInt(limit));
     res.send({ result, count });
